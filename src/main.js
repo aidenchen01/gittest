@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, protocol } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
 
@@ -48,10 +48,15 @@ ipcMain.handle('dialog:openMediaFile', async () => {
   }
 
   const filePath = filePaths[0];
+  const token = randomUUID();
+  mediaAccessTokens.set(token, filePath);
+
   return {
     path: filePath,
     name: path.basename(filePath),
-    extension: path.extname(filePath).toLowerCase()
+    extension: path.extname(filePath).toLowerCase(),
+    token,
+    url: `app-media://${token}`
   };
 });
 
@@ -90,7 +95,17 @@ ipcMain.handle('settings:put', async (_event, key, value) => {
   return store.get(key);
 });
 
+ipcMain.handle('media:release', (_event, token) => {
+  if (typeof token !== 'string' || token.length === 0) {
+    return false;
+  }
+
+  const didDelete = mediaAccessTokens.delete(token);
+  return didDelete;
+});
+
 app.whenReady().then(() => {
+  registerMediaProtocol();
   createWindow();
 
   app.on('activate', function () {
@@ -99,5 +114,6 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', function () {
+  mediaAccessTokens.clear();
   if (process.platform !== 'darwin') app.quit();
 });
