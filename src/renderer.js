@@ -1,3 +1,4 @@
+import { srtToVtt, fmtTime } from './lib/subtitles.mjs';
 const mediaElement = document.getElementById('media');
 const openMediaButton = document.getElementById('openMedia');
 const openSubtitleButton = document.getElementById('openSubtitle');
