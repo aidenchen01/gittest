@@ -30,7 +30,7 @@ jobs:
 
       # 打包 .dmg（未签名）
       - name: Build dmg
-        run: npm run dist
+        run: npm run dist -- --publish never
 
       # 产物归档（用于下载）
       - name: Upload artifact
