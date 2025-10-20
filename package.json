@@ -1,6 +1,6 @@
 {
   "name": "hello-macos-app",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "My first macOS app with Electron, built entirely online.",
   "main": "src/main.js",
   "author": "YourName",
