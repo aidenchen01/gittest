@@ -1,14 +1,62 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, protocol } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
-const Store = require('electron-store');
+const { randomUUID } = require('crypto');
 
-const store = new Store({
-  defaults: {
-    seekStep: 5,
-    showProgressBar: true
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app-media',
+    privileges: {
+      secure: true,
+      standard: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true
+    }
   }
-});
+]);
+
+const storePromise = import('electron-store')
+  .then(({ default: Store }) => new Store({
+    defaults: {
+      seekStep: 5,
+      showProgressBar: true
+    }
+  }))
+  .catch(error => {
+    console.error('Failed to load electron-store:', error);
+    throw error;
+  });
+
+const mediaAccessTokens = new Map();
+
+function registerMediaProtocol () {
+  protocol.registerFileProtocol(
+    'app-media',
+    (request, callback) => {
+      try {
+        const url = new URL(request.url);
+        const token = url.hostname;
+        const filePath = mediaAccessTokens.get(token);
+
+        if (!filePath) {
+          callback({ error: -6 });
+          return;
+        }
+
+        callback(filePath);
+      } catch (error) {
+        console.error('Failed to resolve media resource:', error);
+        callback({ error: -2 });
+      }
+    },
+    error => {
+      if (error) {
+        console.error('Failed to register app-media protocol:', error);
+      }
+    }
+  );
+}
 
 function createWindow () {
   const win = new BrowserWindow({
@@ -44,10 +92,15 @@ ipcMain.handle('dialog:openMediaFile', async () => {
   }
 
   const filePath = filePaths[0];
+  const token = randomUUID();
+  mediaAccessTokens.set(token, filePath);
+
   return {
     path: filePath,
     name: path.basename(filePath),
-    extension: path.extname(filePath).toLowerCase()
+    extension: path.extname(filePath).toLowerCase(),
+    token,
+    url: `app-media://${token}`
   };
 });
 
@@ -75,16 +128,28 @@ ipcMain.handle('dialog:openSubtitleFile', async () => {
   };
 });
 
-ipcMain.handle('settings:get', (_event, key) => {
+ipcMain.handle('settings:get', async (_event, key) => {
+  const store = await storePromise;
   return store.get(key);
 });
 
-ipcMain.handle('settings:put', (_event, key, value) => {
+ipcMain.handle('settings:put', async (_event, key, value) => {
+  const store = await storePromise;
   store.set(key, value);
   return store.get(key);
 });
 
+ipcMain.handle('media:release', (_event, token) => {
+  if (typeof token !== 'string' || token.length === 0) {
+    return false;
+  }
+
+  const didDelete = mediaAccessTokens.delete(token);
+  return didDelete;
+});
+
 app.whenReady().then(() => {
+  registerMediaProtocol();
   createWindow();
 
   app.on('activate', function () {
@@ -93,5 +158,6 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', function () {
+  mediaAccessTokens.clear();
   if (process.platform !== 'darwin') app.quit();
 });

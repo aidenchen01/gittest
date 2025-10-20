@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     get: (key) => ipcRenderer.invoke('settings:get', key),
     put: (key, value) => ipcRenderer.invoke('settings:put', key, value)
   },
-  pathToFileURL: (filePath) => pathToFileURL(filePath).href
+  pathToFileURL: (filePath) => pathToFileURL(filePath).href,
+  releaseMediaToken: (token) => ipcRenderer.invoke('media:release', token)
 });

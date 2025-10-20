@@ -16,6 +16,7 @@ let seekStep = 5;
 let progressVisible = true;
 let subtitleObjectUrl = null;
 let subtitleTrackElement = null;
+let activeMediaToken = null;
 
 function formatTime(value) {
   if (!Number.isFinite(value)) {
@@ -80,6 +81,19 @@ function cleanupSubtitle() {
   }
 }
 
+function releaseActiveMediaToken() {
+  if (!activeMediaToken) {
+    return;
+  }
+
+  const token = activeMediaToken;
+  activeMediaToken = null;
+
+  window.electronAPI.releaseMediaToken(token).catch(error => {
+    console.error('Failed to release media token', error);
+  });
+}
+
 function convertSrtToVtt(srtText) {
   const withoutBom = srtText.replace(/\uFEFF/g, '');
   const normalized = withoutBom.replace(/\r/g, '').trim();
@@ -111,9 +125,12 @@ async function handleOpenMedia() {
     return;
   }
 
-  const fileUrl = window.electronAPI.pathToFileURL(result.path);
+  releaseActiveMediaToken();
+  mediaElement.pause();
+  mediaElement.removeAttribute('src');
   cleanupSubtitle();
-  mediaElement.src = fileUrl;
+  activeMediaToken = result.token;
+  mediaElement.src = result.url;
   mediaElement.load();
   mediaElement.play().catch(() => {});
   fileNameLabel.textContent = result.name;
@@ -231,6 +248,10 @@ function handleKeyboardShortcuts(event) {
 
 function resetPlayerState() {
   fileNameLabel.textContent = '未选择';
+  releaseActiveMediaToken();
+  mediaElement.pause();
+  mediaElement.removeAttribute('src');
+  mediaElement.load();
   cleanupSubtitle();
   updateProgress();
 }
@@ -260,3 +281,7 @@ function init() {
 }
 
 init();
+
+window.addEventListener('beforeunload', () => {
+  releaseActiveMediaToken();
+});
