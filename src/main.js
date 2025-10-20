@@ -1,14 +1,18 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
-const Store = require('electron-store');
 
-const store = new Store({
-  defaults: {
-    seekStep: 5,
-    showProgressBar: true
-  }
-});
+const storePromise = import('electron-store')
+  .then(({ default: Store }) => new Store({
+    defaults: {
+      seekStep: 5,
+      showProgressBar: true
+    }
+  }))
+  .catch(error => {
+    console.error('Failed to load electron-store:', error);
+    throw error;
+  });
 
 function createWindow () {
   const win = new BrowserWindow({
@@ -75,11 +79,13 @@ ipcMain.handle('dialog:openSubtitleFile', async () => {
   };
 });
 
-ipcMain.handle('settings:get', (_event, key) => {
+ipcMain.handle('settings:get', async (_event, key) => {
+  const store = await storePromise;
   return store.get(key);
 });
 
-ipcMain.handle('settings:put', (_event, key, value) => {
+ipcMain.handle('settings:put', async (_event, key, value) => {
+  const store = await storePromise;
   store.set(key, value);
   return store.get(key);
 });
