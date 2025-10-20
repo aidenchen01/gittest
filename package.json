@@ -1,0 +1,38 @@
+{
+  "name": "hello-macos-app",
+  "version": "1.0.0",
+  "description": "My first macOS app with Electron, built entirely online.",
+  "main": "src/main.js",
+  "author": "YourName",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "lint": "echo \"(optional) add eslint later\" && exit 0",
+    "test": "node -e \"console.log('No tests yet')\""
+  },
+  "build": {
+    "appId": "com.example.hellomacosapp",
+    "productName": "Hello macOS App",
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "dmg": {
+      "backgroundColor": "#ffffff",
+      "iconSize": 128,
+      "contents": [
+        { "x": 130, "y": 220, "type": "file" },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}

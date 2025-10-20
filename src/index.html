@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello macOS App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html, body {
+        height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      }
+      .wrap {
+        display: flex; align-items: center; justify-content: center; height: 100%;
+        background: linear-gradient(180deg, #f8fafc, #eef2f7);
+      }
+      .card {
+        background: white; padding: 28px 32px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        width: 560px; max-width: calc(100% - 40px); text-align: center;
+      }
+      h1 { margin: 0 0 12px; font-size: 28px; }
+      p { margin: 6px 0 18px; color: #334155; }
+      .btn {
+        display: inline-block; padding: 10px 16px; border-radius: 10px; border: 1px solid #e2e8f0; cursor: pointer;
+        background: #0ea5e9; color: #fff; font-weight: 600; text-decoration: none;
+      }
+      small { display: block; margin-top: 14px; color: #64748b; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>🎉 你好，macOS！</h1>
+        <p>这是你的第一个 Electron 桌面应用。代码完全在线完成，稍后我们将在云端打包出 <b>.dmg</b>。</p>
+        <a class="btn" href="#" onclick="alert('你点击了第一个按钮！'); return false;">点我试试</a>
+        <small>Version: 1.0.0</small>
+      </div>
+    </div>
+  </body>
+</html>
