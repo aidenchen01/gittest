@@ -1,20 +1,6 @@
 const { app, BrowserWindow, dialog, ipcMain, protocol } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
-const { randomUUID } = require('crypto');
-
-protocol.registerSchemesAsPrivileged([
-  {
-    scheme: 'app-media',
-    privileges: {
-      secure: true,
-      standard: true,
-      supportFetchAPI: true,
-      corsEnabled: true,
-      stream: true
-    }
-  }
-]);
 
 const storePromise = import('electron-store')
   .then(({ default: Store }) => new Store({
@@ -27,36 +13,6 @@ const storePromise = import('electron-store')
     console.error('Failed to load electron-store:', error);
     throw error;
   });
-
-const mediaAccessTokens = new Map();
-
-function registerMediaProtocol () {
-  protocol.registerFileProtocol(
-    'app-media',
-    (request, callback) => {
-      try {
-        const url = new URL(request.url);
-        const token = url.hostname;
-        const filePath = mediaAccessTokens.get(token);
-
-        if (!filePath) {
-          callback({ error: -6 });
-          return;
-        }
-
-        callback(filePath);
-      } catch (error) {
-        console.error('Failed to resolve media resource:', error);
-        callback({ error: -2 });
-      }
-    },
-    error => {
-      if (error) {
-        console.error('Failed to register app-media protocol:', error);
-      }
-    }
-  );
-}
 
 function createWindow () {
   const win = new BrowserWindow({

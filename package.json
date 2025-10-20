@@ -1,6 +1,6 @@
 {
   "name": "hello-macos-app",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "My first macOS app with Electron, built entirely online.",
   "main": "src/main.js",
   "author": "YourName",
@@ -9,8 +9,9 @@
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "lint": "echo \"(optional) add eslint later\" && exit 0",
-    "test": "node -e \"console.log('No tests yet')\""
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "lint": "echo \"(optional) add eslint later\" && exit 0"
   },
   "build": {
     "appId": "com.example.hellomacosapp",
@@ -41,8 +42,10 @@
     }
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
     "electron": "^31.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "electron-store": "^11.0.2"
